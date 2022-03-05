@@ -1,0 +1,178 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/Mux4Way16.hdl
+
+/**
+ * 4-way 16-bit multiplexor:
+ * out = a if sel == 00
+ *       b if sel == 01
+ *       c if sel == 10
+ *       d if sel == 11
+ */
+
+CHIP Mux4Way16 {
+    IN a[16], b[16], c[16], d[16], sel[2];
+    OUT out[16];
+	
+	
+
+    PARTS:
+	Not (in=sel[0], out=notsel0);
+	Not (in=sel[1], out=notsel1);
+	
+// Transforming A
+    And16 (a=a, b[0]=notsel1, 
+				b[1]=notsel1, 
+				b[2]=notsel1, 
+				b[3]=notsel1, 
+				b[4]=notsel1, 
+				b[5]=notsel1, 
+				b[6]=notsel1, 
+				b[7]=notsel1, 
+				b[8]=notsel1, 
+				b[9]=notsel1, 
+				b[10]=notsel1, 
+				b[11]=notsel1, 
+				b[12]=notsel1, 
+				b[13]=notsel1, 
+				b[14]=notsel1, 
+				b[15]=notsel1, out=and16anotsel1);
+	
+	And16 (a=a, b[0]=notsel0, 
+				b[1]=notsel0, 
+				b[2]=notsel0, 
+				b[3]=notsel0, 
+				b[4]=notsel0, 
+				b[5]=notsel0, 
+				b[6]=notsel0, 
+				b[7]=notsel0, 
+				b[8]=notsel0, 
+				b[9]=notsel0, 
+				b[10]=notsel0, 
+				b[11]=notsel0, 
+				b[12]=notsel0, 
+				b[13]=notsel0, 
+				b[14]=notsel0, 
+				b[15]=notsel0, out=and16anotsel0);
+	
+	And16 (a=and16anotsel0, b=and16anotsel1, out=outa);
+	
+// Transforming B	
+	And16 (a=b, b[0]=notsel1, 
+				b[1]=notsel1, 
+				b[2]=notsel1, 
+				b[3]=notsel1, 
+				b[4]=notsel1, 
+				b[5]=notsel1, 
+				b[6]=notsel1, 
+				b[7]=notsel1, 
+				b[8]=notsel1, 
+				b[9]=notsel1, 
+				b[10]=notsel1, 
+				b[11]=notsel1, 
+				b[12]=notsel1, 
+				b[13]=notsel1, 
+				b[14]=notsel1, 
+				b[15]=notsel1, out=and16bnotsel1);
+	
+	And16 (a=b, b[0]=sel[0], 
+				b[1]=sel[0], 
+				b[2]=sel[0], 
+				b[3]=sel[0], 
+				b[4]=sel[0], 
+				b[5]=sel[0], 
+				b[6]=sel[0], 
+				b[7]=sel[0], 
+				b[8]=sel[0], 
+				b[9]=sel[0], 
+				b[10]=sel[0], 
+				b[11]=sel[0], 
+				b[12]=sel[0], 
+				b[13]=sel[0], 
+				b[14]=sel[0], 
+				b[15]=sel[0], out=and16bsel0);
+	
+
+	And16 (a=and16bsel0, b=and16bnotsel1, out=outb);
+
+// Transforming C
+	And16 (a=c, b[0]=sel[1], 
+				b[1]=sel[1], 
+				b[2]=sel[1], 
+				b[3]=sel[1], 
+				b[4]=sel[1], 
+				b[5]=sel[1], 
+				b[6]=sel[1], 
+				b[7]=sel[1], 
+				b[8]=sel[1], 
+				b[9]=sel[1], 
+				b[10]=sel[1], 
+				b[11]=sel[1], 
+				b[12]=sel[1], 
+				b[13]=sel[1], 
+				b[14]=sel[1], 
+				b[15]=sel[1], out=and16csel1);
+	
+	And16 (a=c, b[0]=notsel0, 
+				b[1]=notsel0, 
+				b[2]=notsel0, 
+				b[3]=notsel0, 
+				b[4]=notsel0, 
+				b[5]=notsel0, 
+				b[6]=notsel0, 
+				b[7]=notsel0, 
+				b[8]=notsel0, 
+				b[9]=notsel0, 
+				b[10]=notsel0, 
+				b[11]=notsel0, 
+				b[12]=notsel0, 
+				b[13]=notsel0, 
+				b[14]=notsel0, 
+				b[15]=notsel0, out=and16cnotsel0);
+	
+	And16 (a=and16cnotsel0, b=and16csel1, out=outc);
+
+// Transforming D
+	And16 (a=d, b[0]=sel[1], 
+				b[1]=sel[1], 
+				b[2]=sel[1], 
+				b[3]=sel[1], 
+				b[4]=sel[1], 
+				b[5]=sel[1], 
+				b[6]=sel[1], 
+				b[7]=sel[1], 
+				b[8]=sel[1], 
+				b[9]=sel[1], 
+				b[10]=sel[1], 
+				b[11]=sel[1], 
+				b[12]=sel[1], 
+				b[13]=sel[1], 
+				b[14]=sel[1], 
+				b[15]=sel[1], out=and16dsel1);
+	
+	And16 (a=d, b[0]=sel[0], 
+				b[1]=sel[0], 
+				b[2]=sel[0], 
+				b[3]=sel[0], 
+				b[4]=sel[0], 
+				b[5]=sel[0], 
+				b[6]=sel[0], 
+				b[7]=sel[0], 
+				b[8]=sel[0], 
+				b[9]=sel[0], 
+				b[10]=sel[0], 
+				b[11]=sel[0], 
+				b[12]=sel[0], 
+				b[13]=sel[0], 
+				b[14]=sel[0], 
+				b[15]=sel[0], out=and16dsel0);
+	
+	And16 (a=and16dsel0, b=and16dsel1, out=outd);
+
+//Gathering everything up
+
+	Or16 (a=outa, b=outb, out=outab);
+	Or16 (a=outab, b=outc, out=outabc);
+	Or16 (a=outabc, b=outd, out=out);
+}
