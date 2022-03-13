@@ -39,15 +39,17 @@ class Parser:
             return 'C_PUSH'
         elif self.current_command[0] == 'pop':
             return 'C_POP'
-    
             
-    def arg1 (self):
+    def arg1 (self, command_type):
         '''Returns the first argument of the current command. In
         the case of C_ARITHMETIC, the command itself (add, sub, etc.)
         is returned. Should not be called if the current is C_RETURN.'''
+        
 
-        if self.commandType() != 'C_RETURN':
+        if command_type == 'C_ARITHMETIC':
             return self.current_command[0]
+        elif command_type != 'C_RETURN':
+            return self.current_command[1]
 
     def arg2 (self):
         '''Returns the second argument of the current command. Should
@@ -55,7 +57,7 @@ class Parser:
         or C_CALL.'''
 
         if self.commandType() in ['C_PUSH', 'C_POP', 'C_FUNCTION', 'C_CALL']:
-            return self.current_command[1:]
+            return self.current_command[2]
 
     @staticmethod
     def remove_white_space (code):
@@ -104,48 +106,48 @@ class CodeWriter:
         elif arg1 == 'not':
             self.file_out.write('\n//not\n@SP\nA=M-1\nM=!M')
 
-    def writePushPop (self, arg1, arg2):
+    def writePushPop (self, command_type, arg1, arg2):
         '''Writes to the output file the assembly codetha implements
         the given command, where command is either C_PUSH or C_POP.'''
         
-        if arg1 == 'push':
-            if arg2[0] == 'constant':
-                self.file_out.write(f'\n//push constant {arg2[1]}\n@{arg2[1]}\nD=A\n@SP\nA=M \nM=D\n@SP\nM=M+1')
-            elif arg2[0] == 'local':
-                self.file_out.write(f'\n//push local {arg2[1]}\n@{arg2[1]}\nD=A\n@LCL\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1')
-            elif arg2[0] == 'argument':
-                self.file_out.write(f'\n//push argument {arg2[1]}\n@{arg2[1]}\nD=A\n@ARG\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1')
-            elif arg2[0] == 'this':
-                self.file_out.write(f'\n//push this {arg2[1]}\n@{arg2[1]}\nD=A\n@THIS\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1')
-            elif arg2[0] == 'that':
-                self.file_out.write(f'\n//push that {arg2[1]}\n@{arg2[1]}\nD=A\n@THAT\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1')
-            elif arg2[0] == 'static':
-                self.file_out.write(f'\n//push static {arg2[1]}\n@Foo.{arg2[1]}\nD=M\n@SP\nA=M \nM=D\n@SP\nM=M+1')
-            elif arg2[0] == 'temp':
-                self.file_out.write(f'\n//push temp {arg2[1]}\n@{5 + int(arg2[1])}\nD=M\n@SP\nA=M \nM=D\n@SP\nM=M+1')
-            elif arg2[0] == 'pointer':
-                if arg2[1] == '0':
+        if command_type == 'C_PUSH':
+            if arg1 == 'constant':
+                self.file_out.write(f'\n//push constant {arg2}\n@{arg2}\nD=A\n@SP\nA=M \nM=D\n@SP\nM=M+1')
+            elif arg1 == 'local':
+                self.file_out.write(f'\n//push local {arg2}\n@{arg2}\nD=A\n@LCL\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1')
+            elif arg1 == 'argument':
+                self.file_out.write(f'\n//push argument {arg2}\n@{arg2}\nD=A\n@ARG\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1')
+            elif arg1 == 'this':
+                self.file_out.write(f'\n//push this {arg2}\n@{arg2}\nD=A\n@THIS\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1')
+            elif arg1 == 'that':
+                self.file_out.write(f'\n//push that {arg2}\n@{arg2}\nD=A\n@THAT\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1')
+            elif arg1 == 'static':
+                self.file_out.write(f'\n//push static {arg2}\n@Foo.{arg2}\nD=M\n@SP\nA=M \nM=D\n@SP\nM=M+1')
+            elif arg1 == 'temp':
+                self.file_out.write(f'\n//push temp {arg2}\n@{5 + int(arg2)}\nD=M\n@SP\nA=M \nM=D\n@SP\nM=M+1')
+            elif arg1 == 'pointer':
+                if arg2 == '0':
                     self.file_out.write(f'\n//push pointer 0\n@THIS\nD=M\n@SP\nA=M \nM=D\n@SP\nM=M+1')
-                elif arg2[1] == '1':
+                elif arg2 == '1':
                     self.file_out.write(f'\n//push pointer 1\n@THAT\nD=M\n@SP\nA=M \nM=D\n@SP\nM=M+1')
         
-        if arg1 == 'pop':
-            if arg2[0] == 'local':
-                self.file_out.write(f'\n//pop local {arg2[1]}\n@{arg2[1]}\nD=A\n@LCL\nD=D+M\n@R13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@R13\nA=M\nM=D')
-            elif arg2[0] == 'argument':
-                self.file_out.write(f'\n//pop argument {arg2[1]}\n@{arg2[1]}\nD=A\n@ARG\nD=D+M\n@R13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@R13\nA=M\nM=D')
-            elif arg2[0] == 'this':
-                self.file_out.write(f'\n//pop this {arg2[1]}\n@{arg2[1]}\nD=A\n@THIS\nD=D+M\n@R13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@R13\nA=M\nM=D')
-            elif arg2[0] == 'that':
-                self.file_out.write(f'\n//pop that {arg2[1]}\n@{arg2[1]}\nD=A\n@THAT\nD=D+M\n@R13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@R13\nA=M\nM=D')
-            elif arg2[0] == 'static':
-                self.file_out.write(f'\n//pop static {arg2[1]}\n@SP\nM=M-1\nA=M\nD=M\n@Foo.{arg2[1]}\nM=D')
-            elif arg2[0] == 'temp':
-                self.file_out.write(f'\n//pop temp {arg2[1]}\n@SP\nM=M-1\nA=M\nD=M\n@{5 + int(arg2[1])}\nM=D')
-            elif arg2[0] == 'pointer':
-                if arg2[1] == '0':
+        if command_type == 'C_POP':
+            if arg1 == 'local':
+                self.file_out.write(f'\n//pop local {arg2}\n@{arg2}\nD=A\n@LCL\nD=D+M\n@R13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@R13\nA=M\nM=D')
+            elif arg1 == 'argument':
+                self.file_out.write(f'\n//pop argument {arg2}\n@{arg2}\nD=A\n@ARG\nD=D+M\n@R13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@R13\nA=M\nM=D')
+            elif arg1 == 'this':
+                self.file_out.write(f'\n//pop this {arg2}\n@{arg2}\nD=A\n@THIS\nD=D+M\n@R13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@R13\nA=M\nM=D')
+            elif arg1 == 'that':
+                self.file_out.write(f'\n//pop that {arg2}\n@{arg2}\nD=A\n@THAT\nD=D+M\n@R13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@R13\nA=M\nM=D')
+            elif arg1 == 'static':
+                self.file_out.write(f'\n//pop static {arg2}\n@SP\nM=M-1\nA=M\nD=M\n@Foo.{arg2}\nM=D')
+            elif arg1 == 'temp':
+                self.file_out.write(f'\n//pop temp {arg2}\n@SP\nM=M-1\nA=M\nD=M\n@{5 + int(arg2)}\nM=D')
+            elif arg1 == 'pointer':
+                if arg2 == '0':
                     self.file_out.write(f'\n//pop pointer 0\n@SP\nM=M-1\nA=M\nD=M\n@THIS\nM=D')
-                elif arg2[1] == '1':
+                elif arg2 == '1':
                     self.file_out.write(f'\n//pop pointer 1\n@SP\nM=M-1\nA=M\nD=M\n@THAT\nM=D')
 
     def Close (self):
@@ -164,12 +166,15 @@ def main ():
 
     while (parser.hasMoreCommands() == True):
         
-        parser.advance()
-        arg1 = parser.arg1()
         
-        if parser.commandType() in ['C_PUSH', 'C_POP'] :
+        parser.advance()
+        command_type = parser.commandType()
+        arg1 = parser.arg1(command_type)
+        
+        
+        if command_type in ['C_PUSH', 'C_POP'] :
             arg2 = parser.arg2()
-            code_writer.writePushPop(arg1, arg2)
+            code_writer.writePushPop(command_type, arg1, arg2)
 
         elif parser.commandType() == 'C_ARITHMETIC':
             code_writer.writeArithmetic(arg1)
