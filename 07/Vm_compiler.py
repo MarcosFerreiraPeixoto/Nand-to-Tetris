@@ -176,7 +176,7 @@ def main ():
             arg2 = parser.arg2()
             code_writer.writePushPop(command_type, arg1, arg2)
 
-        elif parser.commandType() == 'C_ARITHMETIC':
+        elif command_type == 'C_ARITHMETIC':
             code_writer.writeArithmetic(arg1)
 
     code_writer.Close()
