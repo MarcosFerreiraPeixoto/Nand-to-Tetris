@@ -106,7 +106,7 @@ class CodeWriter:
         elif arg1 == 'not':
             self.file_out.write('\n//not\n@SP\nA=M-1\nM=!M')
 
-    def writePushPop (self, command_type, arg1, arg2):
+    def writePushPop (self, command_type, arg1, arg2, file_name):
         '''Writes to the output file the assembly codetha implements
         the given command, where command is either C_PUSH or C_POP.'''
         
@@ -122,7 +122,7 @@ class CodeWriter:
             elif arg1 == 'that':
                 self.file_out.write(f'\n//push that {arg2}\n@{arg2}\nD=A\n@THAT\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1')
             elif arg1 == 'static':
-                self.file_out.write(f'\n//push static {arg2}\n@Foo.{arg2}\nD=M\n@SP\nA=M \nM=D\n@SP\nM=M+1')
+                self.file_out.write(f'\n//push static {arg2}\n@{file_name}.{arg2}\nD=M\n@SP\nA=M \nM=D\n@SP\nM=M+1')
             elif arg1 == 'temp':
                 self.file_out.write(f'\n//push temp {arg2}\n@{5 + int(arg2)}\nD=M\n@SP\nA=M \nM=D\n@SP\nM=M+1')
             elif arg1 == 'pointer':
@@ -141,7 +141,7 @@ class CodeWriter:
             elif arg1 == 'that':
                 self.file_out.write(f'\n//pop that {arg2}\n@{arg2}\nD=A\n@THAT\nD=D+M\n@R13\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@R13\nA=M\nM=D')
             elif arg1 == 'static':
-                self.file_out.write(f'\n//pop static {arg2}\n@SP\nM=M-1\nA=M\nD=M\n@Foo.{arg2}\nM=D')
+                self.file_out.write(f'\n//pop static {arg2}\n@SP\nM=M-1\nA=M\nD=M\n@{file_name}.{arg2}\nM=D')
             elif arg1 == 'temp':
                 self.file_out.write(f'\n//pop temp {arg2}\n@SP\nM=M-1\nA=M\nD=M\n@{5 + int(arg2)}\nM=D')
             elif arg1 == 'pointer':
@@ -174,7 +174,7 @@ def main ():
         
         if command_type in ['C_PUSH', 'C_POP'] :
             arg2 = parser.arg2()
-            code_writer.writePushPop(command_type, arg1, arg2)
+            code_writer.writePushPop(command_type, arg1, arg2, file[:-3].split('/')[-2])
 
         elif command_type == 'C_ARITHMETIC':
             code_writer.writeArithmetic(arg1)
