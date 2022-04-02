@@ -1,0 +1,280 @@
+
+
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/09/Square/Square.jack
+
+/** Implements a graphical square. */
+class Snake {
+	
+	field Array arr_pos_x; //Array that indicates the position of the snake on the x axis
+	field Array arr_pos_y; //Array that indicates the position of the snake on the y axis
+	
+	field int snake_len; //Keeps track of the snake's size
+	field int counter; //Counter for loops
+	field int last_pos_x; //Keeps track of the grid position of the snake's tail on the x axis
+	field int last_pos_y; //Keeps track of the grid position of the snake's tail on the y axis
+	
+	field int next_pos_x; //next x grid position of the snake
+	field int next_pos_y; //next y grid position of the snake
+    field int x, y; // screen location of the Snake's top-left corner
+
+	field int apple_x; //x grid position of the apple
+	field int apple_y; //y grid position of the apple
+
+	field int score; //Keeps track of the players score
+	field boolean gameOver; //If true, the game is over
+     
+    /** Constructs a new snake with a given location and size. */
+    constructor Snake new(int Ax, int Ay) {
+		
+	   	let snake_len = 5;
+	   	let arr_pos_x = Array.new(1025);
+	   	let arr_pos_x[0] = 16;
+	   	let arr_pos_x[1] = 15;
+	   	let arr_pos_x[2] = 14;
+	   	let arr_pos_x[3] = 13;
+	   	let arr_pos_x[4] = 12;
+		
+	   	let arr_pos_y = Array.new(1025);
+	   	let arr_pos_y[0] = 16;
+	   	let arr_pos_y[1] = 16;
+	   	let arr_pos_y[2] = 16;
+	   	let arr_pos_y[3] = 16;
+	   	let arr_pos_y[4] = 16;
+
+		let counter = snake_len;
+
+		// Drawing the snake's first position
+		while (counter > 0) {
+			let counter = counter - 1;
+
+			let x = 127 + (arr_pos_x[counter] * 8);
+	   		let y = arr_pos_y[counter] * 8;
+
+			do Screen.setColor(true);
+			do Screen.drawRectangle(x, y, x + 7, y + 7);
+
+			do Screen.setColor(false);	
+			do Screen.drawLine(x + 1, y, x + 7, y + 6);
+			do Screen.drawLine(x + 5, y, x + 7, y + 2);
+			do Screen.drawLine(x, y + 3, x + 4, y + 7);
+			do Screen.drawPixel(x, y + 7);
+		}
+
+		//Prints initial score
+		let score = 0;
+
+		do Output.moveCursor(0, 0);
+		do Output.printString ("Score: ");
+		do Output.printInt(score);
+
+		let gameOver = false;
+		do createApple();
+
+       	return this;
+    }
+ 
+    /** Draws the square on the screen. */
+    method void draw() {
+		do drawApple();
+
+		//Erases the snake's tail
+		let x = 127 + (last_pos_x * 8);
+		let y = last_pos_y * 8;
+		
+		do Screen.setColor(false);
+		do Screen.drawRectangle(x, y, x + 7, y + 7);
+        
+		//Draws the snake's head (new position)
+		let x = 127 + (arr_pos_x[0] * 8);
+		let y = arr_pos_y[0] * 8;
+
+
+		do Screen.setColor(true);
+		do Screen.drawLine(127, 0, 127, 255);
+		do Screen.drawLine(382, 0, 382, 255);
+		do Screen.drawLine(127, 0, 382, 0);
+		do Screen.drawLine(127, 255, 382, 255);
+
+		do Screen.drawRectangle(x, y, x + 7, y + 7);
+
+		do Screen.setColor(false);	
+		do Screen.drawLine(x + 1, y, x + 7, y + 6);
+		do Screen.drawLine(x + 5, y, x + 7, y + 2);
+		do Screen.drawLine(x, y + 3, x + 4, y + 7);
+		do Screen.drawPixel(x, y + 7);
+
+		return;
+	}
+	
+	method void move() {
+		//Sets the new location for the whole snake.
+		let counter = snake_len - 1;
+		
+		while (counter > 0) {
+			let arr_pos_x[counter] = arr_pos_x[counter - 1];
+			let arr_pos_y[counter] = arr_pos_y[counter - 1];
+			
+			let counter = counter - 1;
+			}
+		
+		let arr_pos_x[0] = next_pos_x;
+		let arr_pos_y[0] = next_pos_y;
+		
+		return;
+	}
+  
+    /** Moves the snake up by one grid square. */
+    method void moveUp() {
+        //Registers the snake's next position
+		let next_pos_x = arr_pos_x[0];
+		let next_pos_y = arr_pos_y[0] - 1;
+		
+		//Registers the snake's tail position
+		let last_pos_x = arr_pos_x[snake_len - 1];
+		let last_pos_y = arr_pos_y[snake_len - 1];
+		
+		//Checks if the snake has hit a wall and, if so, sets it's 
+		//next location to the oposite side
+		if (next_pos_y < 0) {
+			let next_pos_y = 31;
+		}
+        
+		do move();
+		do draw();			
+		
+		return;
+    }
+ 
+    /** Moves the snake up by down grid square. */
+    method void moveDown() {
+      	//Registers the snake's next position
+		let next_pos_x = arr_pos_x[0];
+		let next_pos_y = arr_pos_y[0] + 1;
+		
+		//Registers the snake's tail position
+		let last_pos_x = arr_pos_x[snake_len - 1];
+		let last_pos_y = arr_pos_y[snake_len - 1];
+		
+		//Checks if the snake has hit a wall and, if so, sets its 
+		//next location to the oposite side
+		if (next_pos_y > 31) {
+			let next_pos_y = 0;
+		}
+        
+		do move();		
+		do draw();		
+		
+		return;
+    }
+ 
+    /** Moves the snake left by one grid square. */
+    method void moveLeft() {
+      //Registers the snake's next position
+		let next_pos_x = arr_pos_x[0] - 1;
+		let next_pos_y = arr_pos_y[0];
+		
+		//Registers the snake's tail position
+		let last_pos_x = arr_pos_x[snake_len - 1];
+		let last_pos_y = arr_pos_y[snake_len - 1];
+		
+		//Checks if the snake has hit a wall and, if so, sets its 
+		//next location to the oposite side
+		if (next_pos_x < 0) {
+			let next_pos_x = 31;
+		}
+        
+		do move();		
+		do draw();			
+		
+		return;
+    }
+ 
+   	/** Moves the snake right by one grid square. */
+   	method void moveRight() {
+	   	//Registers the snake's next position
+		let next_pos_x = arr_pos_x[0] + 1;
+		let next_pos_y = arr_pos_y[0];
+		
+		//Registers the snake's tail position
+		let last_pos_x = arr_pos_x[snake_len - 1];
+		let last_pos_y = arr_pos_y[snake_len - 1];
+		
+		//Checks if the snake has hit a wall and, if so, sets its 
+		//next location to the oposite side
+		if (next_pos_x > 31) {
+			let next_pos_x = 0;
+		}
+        
+		do move();		
+		do draw();		
+		
+		return;
+    }
+	
+	method boolean checkColision() {
+		// Checking if the snake ate itself
+		let counter = snake_len - 1;
+		while (counter > 0) {
+			if ((next_pos_x = arr_pos_x[counter]) & (next_pos_y = arr_pos_y[counter])) {
+				let gameOver = true;
+			}
+			let counter = counter - 1;
+		}
+
+		//Checking if the snake ate the apple
+		if ((next_pos_x = apple_x) & (next_pos_y = apple_y)) {
+			let snake_len = snake_len + 1;
+
+			let arr_pos_x[snake_len - 1] = arr_pos_x[snake_len - 2];
+			let arr_pos_y[snake_len - 1] = arr_pos_y[snake_len - 2];
+
+			do updateScore();
+
+			do createApple();
+		}
+	
+		return gameOver;
+	}
+
+	method void createApple (){
+		// Set's the apple to a random location in the grid
+		let apple_x = Random.randRange(31);
+		let apple_y = Random.randRange(31);
+
+		do drawApple();
+
+		return;
+	}
+
+	method void drawApple() {
+		do Screen.setColor(true);
+		
+	   	let x = 127 + (apple_x * 8);
+	   	let y = apple_y * 8;
+	   	
+		do Screen.drawRectangle(x + 2, y, x + 5, y + 1);
+		do Screen.drawRectangle(x, y + 2, x + 1, y + 5);
+		do Screen.drawRectangle(x + 6, y + 2, x + 7, y + 5);
+		do Screen.drawRectangle(x + 2, y + 6, x + 5, y + 7);
+
+		return;
+	}
+
+	method void updateScore() {
+		let score = score + 10;
+
+		do Output.moveCursor(0, 0);
+		do Output.printString ("Score: ");
+		do Output.printInt(score);
+
+		return;
+	}
+
+ }
+ 
+
+
+

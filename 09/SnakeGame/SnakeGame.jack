@@ -1,0 +1,95 @@
+class SnakeGame {
+   	field Snake snake; // the snake of this game
+   	field int direction; // the anake's current direction: 
+   	                     // 1=up, 2=down, 3=left, 4=right
+   	field Array mov_stack; // Array that register the snake's next movements.
+   	field int stack_size; //Registers the mov_stack size's
+   	field int time_counter; // Counter to keep the game's speed
+   	field int speed; // Game speed, the larger, the slower the snake moves
+	field boolean exit;
+	field int memAddress;
+
+	/** Constructs a new snake Game. */
+   	constructor SnakeGame new() {
+      	// Creates a Snake in the center
+      	let snake = Snake.new(127, 0);
+      	let direction = 4;  // initial state is right
+
+	  	let mov_stack = Array.new(10);
+	  	let mov_stack[0] = 4;
+
+	  	let speed = 100;
+
+	  	do Screen.setColor(true);
+      	do Screen.drawLine(127, 0, 127, 255);
+	  	do Screen.drawLine(382, 0, 382, 255);
+	  	do Screen.drawLine(127, 0, 382, 0);
+	  	do Screen.drawLine(127, 255, 382, 255);
+		
+
+      	return this;
+  	}
+
+   /** Moves the snake in the current direction. */
+   	method void moveSnake() {
+
+		if (mov_stack[0] = 1) { do snake.moveUp(); }
+		if (mov_stack[0] = 2) { do snake.moveDown(); }
+		if (mov_stack[0] = 3) { do snake.moveLeft(); }
+		if (mov_stack[0] = 4) { do snake.moveRight(); }
+
+		let exit = snake.checkColision();
+
+		return;
+   	}
+
+   /** Runs the game: handles the user's inputs and moves the snake accordingly */
+   	method void run() {
+    	var char key;  // the key currently pressed by the user
+    	let exit = false;
+		let stack_size = 0;
+	  
+	  
+     	while (~exit) {
+			let time_counter = speed;
+	  
+			while (time_counter > 0) {
+				let key = Keyboard.keyPressed();
+
+				if (key = 81)  { let exit = true; }     // q key
+				if (key = 131) { let direction = 1; }   // up arrow
+				if (key = 133) { let direction = 2; }   // down arrow
+				if (key = 130) { let direction = 3; }   // left arrow
+				if (key = 132) { let direction = 4; }   // right arrow
+
+
+				if (~(direction = mov_stack[stack_size])) { //checking if the direction is the same as the next direction on the stack
+					if (~(((direction = 2) & (mov_stack[stack_size] = 1)) | ((direction = 1) & (mov_stack[stack_size] = 2)) | ((direction = 4) & (mov_stack[stack_size] = 3)) | ((direction = 3) & (mov_stack[stack_size] = 4))) ){
+						let stack_size = stack_size + 1;
+						let mov_stack[stack_size] = direction;
+					}
+				}
+
+				let time_counter = time_counter - 1;
+
+				do Sys.wait(1);
+			}
+
+			if (stack_size > 0){
+				let time_counter = 1;
+
+				while (time_counter < (stack_size + 1)) {
+					let mov_stack[time_counter - 1] = mov_stack[time_counter];
+					let time_counter = time_counter + 1;
+				}
+
+				let stack_size = stack_size - 1;
+			}
+		
+		do moveSnake();
+		
+    	} // while
+
+     	return;
+   	}
+}
