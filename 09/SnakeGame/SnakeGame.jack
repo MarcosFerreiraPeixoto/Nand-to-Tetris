@@ -18,7 +18,7 @@ class SnakeGame {
 	  	let mov_stack = Array.new(10);
 	  	let mov_stack[0] = 4;
 
-	  	let speed = 100;
+	  	let speed = 40;
 
 	  	do Screen.setColor(true);
       	do Screen.drawLine(127, 0, 127, 255);
