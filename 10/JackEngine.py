@@ -135,7 +135,7 @@ class JackEngine:
         self.jmps = 0
         #self.tokenizer = JackTokenizer('test.jack()') ##MODIFICAR PAR self.tokenizer = tokenizer
         self.tokenizer = tokenizer
-
+        
         self.type = ['int', 'char', 'boolean']
         self.statements = ['let', 'if', 'while', 'do', 'return']
         self.op = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
@@ -315,13 +315,16 @@ class JackEngine:
         # varName | varName'[' expression ']' | subroutineName '(' expressionList ')' | 
         # (className | varName)'.'subroutineName'(' expressionList ')'
         elif token_type == 'identifier':
-                
-            #varName 
-            self.compile()
             self.tokenizer.advance()
                 
             # varName '[' expression ']' 
             if self.tokenizer.current_token == '[':
+                self.tokenizer.counter -= 1 #Retrocendo 1
+
+                #varName 
+                self.compile()
+                self.tokenizer.advance()
+
                 # '['
                 self.compile()
                 self.tokenizer.advance()
@@ -338,6 +341,12 @@ class JackEngine:
                 
             #subroutineName '(' expressionList ')' 
             elif self.tokenizer.current_token == '(':
+                self.tokenizer.counter -= 1 #Retrocendo 1
+
+                #varName 
+                self.compile()
+                self.tokenizer.advance()
+
                 # '('
                 self.compile()
                 self.tokenizer.advance()
@@ -354,6 +363,12 @@ class JackEngine:
                 
             # (className | varName)'.'subroutineName'(' expressionList ')'
             elif self.tokenizer.current_token == '.':
+                self.tokenizer.counter -= 1 #Retrocendo 1
+
+                #varName 
+                self.compile()
+                self.tokenizer.advance()
+
                 # '.'
                 self.compile()
                 self.tokenizer.advance()
@@ -385,6 +400,8 @@ class JackEngine:
             # varName
             else:
                 self.tokenizer.counter -= 1 #Retrocendo 1
+                #varName 
+                self.compile()
             
         # '(' expression ')'
         elif self.tokenizer.current_token == '(':
